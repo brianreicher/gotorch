@@ -232,3 +232,78 @@ func NewOnes(shape []int, dtype Dtype, requiresGrad, pinMemory bool) (*Tensor, e
 		PinMemory:    pinMemory,
 	}, nil
 }
+
+func NewArange(start, end, step float32, dtype Dtype, requiresGrad, pinMemory bool) (*Tensor, error) {
+	if step == 0 {
+		return nil, errors.New("step cannot be zero")
+	}
+	var length int
+	if step > 0 {
+		length = int((end - start) / step)
+	} else {
+		length = int((start - end) / -step)
+	}
+
+	var data interface{}
+	switch dtype.DataType() {
+	case "float32":
+		values := make([]float32, length)
+		for i := 0; i < length; i++ {
+			values[i] = start + float32(i)*step
+		}
+		data = values
+	case "float64":
+		values := make([]float64, length)
+		for i := 0; i < length; i++ {
+			values[i] = float64(start + float32(i)*step)
+		}
+		data = values
+	default:
+		return nil, errors.New("unsupported data type")
+	}
+
+	return &Tensor{
+		Shape:        []int{length},
+		Data:         data,
+		Dtype:        dtype,
+		RequiresGrad: requiresGrad,
+		PinMemory:    pinMemory,
+	}, nil
+}
+
+func NewRange(start, end, step float32, dtype Dtype, requiresGrad, pinMemory bool) (*Tensor, error) {
+	return NewArange(start, end+step, step, dtype, requiresGrad, pinMemory)
+}
+
+func NewLinspace(start, end float32, num int, dtype Dtype, requiresGrad, pinMemory bool) (*Tensor, error) {
+	if num <= 0 {
+		return nil, errors.New("num must be positive")
+	}
+	step := (end - start) / float32(num-1)
+
+	var data interface{}
+	switch dtype.DataType() {
+	case "float32":
+		values := make([]float32, num)
+		for i := 0; i < num; i++ {
+			values[i] = start + float32(i)*step
+		}
+		data = values
+	case "float64":
+		values := make([]float64, num)
+		for i := 0; i < num; i++ {
+			values[i] = float64(start + float32(i)*step)
+		}
+		data = values
+	default:
+		return nil, errors.New("unsupported data type")
+	}
+
+	return &Tensor{
+		Shape:        []int{num},
+		Data:         data,
+		Dtype:        dtype,
+		RequiresGrad: requiresGrad,
+		PinMemory:    pinMemory,
+	}, nil
+}
