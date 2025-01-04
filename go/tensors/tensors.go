@@ -196,3 +196,39 @@ func NewZeroes(shape []int, dtype Dtype, requiresGrad, pinMemory bool) (*Tensor,
 		PinMemory:    pinMemory,
 	}, nil
 }
+
+func NewOnes(shape []int, dtype Dtype, requiresGrad, pinMemory bool) (*Tensor, error) {
+	var (
+		data interface{}
+		size int = 1
+	)
+
+	for _, v := range shape {
+		size *= v
+	}
+
+	switch dtype.DataType() {
+	case "float32":
+		ones := make([]float32, size)
+		for i := range ones {
+			ones[i] = 1.0
+		}
+		data = ones
+	case "float64":
+		ones := make([]float64, size)
+		for i := range ones {
+			ones[i] = 1.0
+		}
+		data = ones
+	default:
+		return nil, errors.New("unsupported data type")
+	}
+
+	return &Tensor{
+		Shape:        shape,
+		Data:         data,
+		Dtype:        dtype,
+		RequiresGrad: requiresGrad,
+		PinMemory:    pinMemory,
+	}, nil
+}
