@@ -3,6 +3,7 @@ package tensors
 import (
 	"errors"
 	"fmt"
+	"math"
 )
 
 type Dtype interface {
@@ -301,6 +302,117 @@ func NewLinspace(start, end float32, num int, dtype Dtype, requiresGrad, pinMemo
 
 	return &Tensor{
 		Shape:        []int{num},
+		Data:         data,
+		Dtype:        dtype,
+		RequiresGrad: requiresGrad,
+		PinMemory:    pinMemory,
+	}, nil
+}
+
+func NewLogspace(start, end float32, num int, base float32, dtype Dtype, requiresGrad, pinMemory bool) (*Tensor, error) {
+	if num <= 0 {
+		return nil, errors.New("num must be positive")
+	}
+
+	if base == 0 {
+		base = 10
+	}
+
+	step := (end - start) / float32(num-1)
+
+	var data interface{}
+	switch dtype.DataType() {
+	case "float32":
+		values := make([]float32, num)
+		for i := 0; i < num; i++ {
+			values[i] = float32(math.Pow(float64(base), float64(start+float32(i)*step)))
+		}
+		data = values
+	case "float64":
+		values := make([]float64, num)
+		for i := 0; i < num; i++ {
+			values[i] = math.Pow(float64(base), float64(start+float32(i)*step))
+		}
+		data = values
+	default:
+		return nil, errors.New("unsupported data type")
+	}
+
+	return &Tensor{
+		Shape:        []int{num},
+		Data:         data,
+		Dtype:        dtype,
+		RequiresGrad: requiresGrad,
+		PinMemory:    pinMemory,
+	}, nil
+}
+
+func NewEye(size int, dtype Dtype, requiresGrad, pinMemory bool) (*Tensor, error) {
+	if size <= 0 {
+		return nil, errors.New("size must be positive")
+	}
+
+	var data interface{}
+	switch dtype.DataType() {
+	case "float32":
+		matrix := make([]float32, size*size)
+		for i := 0; i < size; i++ {
+			matrix[i*size+i] = 1.0
+		}
+		data = matrix
+	case "float64":
+		matrix := make([]float64, size*size)
+		for i := 0; i < size; i++ {
+			matrix[i*size+i] = 1.0
+		}
+		data = matrix
+	default:
+		return nil, errors.New("unsupported data type")
+	}
+
+	return &Tensor{
+		Shape:        []int{size, size},
+		Data:         data,
+		Dtype:        dtype,
+		RequiresGrad: requiresGrad,
+		PinMemory:    pinMemory,
+	}, nil
+}
+
+func NewFull(fillVal interface{}, shape []int, dtype Dtype, requiresGrad, pinMemory bool) (*Tensor, error) {
+	size := 1
+	for _, val := range shape {
+		size *= val
+	}
+
+	var data interface{}
+	switch dtype.DataType() {
+	case "float32":
+		matrix := make([]float32, size)
+		fillVal, ok := fillVal.(float32)
+		if !ok {
+			return nil, errors.ErrUnsupported
+		}
+		for i := 0; i < size; i++ {
+			matrix[0] = fillVal
+		}
+		data = matrix
+	case "float64":
+		matrix := make([]float64, size)
+		fillVal, ok := fillVal.(float64)
+		if !ok {
+			return nil, errors.ErrUnsupported
+		}
+		for i := 0; i < size; i++ {
+			matrix[0] = fillVal
+		}
+		data = matrix
+	default:
+		return nil, errors.ErrUnsupported
+	}
+
+	return &Tensor{
+		Shape:        shape,
 		Data:         data,
 		Dtype:        dtype,
 		RequiresGrad: requiresGrad,
