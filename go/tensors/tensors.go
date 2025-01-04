@@ -5,8 +5,6 @@ import (
 	"fmt"
 )
 
-type Data interface{}
-
 type Dtype interface {
 	DataType() string
 }
@@ -35,14 +33,14 @@ func (c CPU) Device() string {
 
 type Tensor struct {
 	Shape        []int
-	Data         Data // Data can hold any type depending on the Dtype ([]float32, []float64)
+	Data         interface{} // Data can hold any type depending on the Dtype ([]float32, []float64)
 	Dtype        Dtype
 	Device       Device
 	RequiresGrad bool
 	PinMemory    bool
 }
 
-func NewTensor(data Data, shape []int, dtype string, requiresGrad, pinMemory bool) (*Tensor, error) {
+func NewTensor(data interface{}, shape []int, dtype string, requiresGrad, pinMemory bool) (*Tensor, error) {
 	expectedSize := 1
 	for _, dim := range shape {
 		expectedSize *= dim
@@ -59,7 +57,7 @@ func NewTensor(data Data, shape []int, dtype string, requiresGrad, pinMemory boo
 		}
 		return &Tensor{
 			Shape:        shape,
-			Data:         data,
+			Data:         dataFloat32,
 			Dtype:        Float32{},
 			RequiresGrad: requiresGrad,
 			PinMemory:    pinMemory,
@@ -74,7 +72,7 @@ func NewTensor(data Data, shape []int, dtype string, requiresGrad, pinMemory boo
 		}
 		return &Tensor{
 			Shape:        shape,
-			Data:         data,
+			Data:         dataFloat64,
 			Dtype:        Float64{},
 			RequiresGrad: requiresGrad,
 			PinMemory:    pinMemory,
@@ -84,7 +82,7 @@ func NewTensor(data Data, shape []int, dtype string, requiresGrad, pinMemory boo
 	}
 }
 
-func (t *Tensor) SetData(newData Data) error {
+func (t *Tensor) SetData(newData interface{}) error {
 	expectedSize := 1
 	for _, dim := range t.Shape {
 		expectedSize *= dim
@@ -115,7 +113,7 @@ func (t *Tensor) SetData(newData Data) error {
 	return nil
 }
 
-func (t *Tensor) GetData() (Data, error) {
+func (t *Tensor) GetData() (interface{}, error) {
 	switch t.Dtype.DataType() {
 	case "float32":
 		return t.Data.([]float32), nil
@@ -190,7 +188,6 @@ func NewZeroes(shape []int, dtype Dtype, requiresGrad, pinMemory bool) (*Tensor,
 		return nil, errors.New("unsupported data type")
 	}
 
-	// Create and return the tensor
 	return &Tensor{
 		Shape:        shape,
 		Data:         data,
