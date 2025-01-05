@@ -28,7 +28,7 @@ func ChunkData(data interface{}, dtype Dtype, shape []int) (interface{}, error) 
 	}
 }
 
-func chunkRecursive[T any](data []T, shape []int) interface{} {
+func chunkRecursive[T float32 | float64](data []T, shape []int) interface{} {
 	// Non recursive case: vector data
 	if len(shape) == 1 {
 		return data[:shape[0]]
