@@ -42,6 +42,10 @@ type Tensor struct {
 }
 
 func NewTensor(data interface{}, shape []int, dtype string, requiresGrad, pinMemory bool) (*Tensor, error) {
+	if 4 < len(shape) || len(shape) < 1 {
+		return nil, errors.New("GoTorch supports 1-d vectors through 4-d tensors")
+	}
+
 	expectedSize := 1
 	for _, dim := range shape {
 		expectedSize *= dim

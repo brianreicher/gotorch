@@ -17,56 +17,31 @@ func ChunkData(data interface{}, dtype Dtype, shape []int) (interface{}, error) 
 		if len(data.([]float32)) != totalElements {
 			return nil, errors.New("data size does not match the desired shape")
 		}
-
-		chunkedData := reshapeRecursive(data.([]float32), Float32{}, shape)
-		return chunkedData, nil
+		return chunkRecursive(data.([]float32), shape), nil
 	case Float64{}:
 		if len(data.([]float64)) != totalElements {
 			return nil, errors.New("data size does not match the desired shape")
 		}
-
-		chunkedData := reshapeRecursive(data.([]float64), Float64{}, shape)
-		return chunkedData, nil
+		return chunkRecursive(data.([]float64), shape), nil
 	default:
-		return nil, errors.New("cannot reshape data")
+		return nil, errors.New("unsupported data type")
 	}
 }
 
-func reshapeRecursive(data interface{}, dtype Dtype, shape []int) interface{} {
+func chunkRecursive[T any](data []T, shape []int) interface{} {
+	// Non recursive case: vector data
 	if len(shape) == 1 {
-		switch dtype {
-		case Float32{}:
-			return data.([]float32)[:shape[0]]
-		case Float64{}:
-			return data.([]float64)[:shape[0]]
-		default:
-			return nil
-		}
+		return data[:shape[0]]
 	}
 
+	// Recursive case: for multidimensional tensors (2D, 3D, 4D)
 	chunks := shape[0]
-	switch dtype {
-	case Float32{}:
-		data := data.([]float32)
-		chunkSize := len(data) / chunks
-		var result []interface{}
-		for i := 0; i < chunks; i++ {
-			chunk := reshapeRecursive(data[i*chunkSize:(i+1)*chunkSize], Float32{}, shape[1:])
-			result = append(result, chunk)
-		}
+	chunkSize := len(data) / chunks
+	result := make([]interface{}, chunks)
 
-		return result
-	case Float64{}:
-		data := data.([]float64)
-		chunkSize := len(data) / chunks
-		var result []interface{}
-		for i := 0; i < chunks; i++ {
-			chunk := reshapeRecursive(data[i*chunkSize:(i+1)*chunkSize], Float64{}, shape[1:])
-			result = append(result, chunk)
-		}
-
-		return result
-	default:
-		return nil
+	for i := 0; i < chunks; i++ {
+		result[i] = chunkRecursive(data[i*chunkSize:(i+1)*chunkSize], shape[1:])
 	}
+
+	return result
 }
