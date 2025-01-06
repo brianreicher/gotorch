@@ -32,28 +32,31 @@ func Argwhere(t *Tensor) (*Tensor, error) {
 				PinMemory:    t.PinMemory}, nil
 		case 2:
 			chunkData := chunkData.([][]float32)
-			indexes := make([][]int, 0)
+			indexes := make([]int, 0)
 			for i, row := range chunkData {
 				for j, val := range row {
 					if val != 0 {
-						indexes = append(indexes, []int{i, j})
+						indexes = append(indexes, i)
+						indexes = append(indexes, j)
 					}
 				}
 			}
 			return &Tensor{
 				Shape:        []int{len(indexes), 2},
-				Data:         chunkData,
+				Data:         indexes,
 				Dtype:        Float32{},
 				RequiresGrad: t.RequiresGrad,
 				PinMemory:    t.PinMemory}, nil
 		case 3:
 			chunkData := chunkData.([][][]float32)
-			indexes := make([][]int, 0)
+			indexes := make([]int, 0)
 			for i, matrix := range chunkData {
 				for j, row := range matrix {
 					for k, val := range row {
 						if val != 0 {
-							indexes = append(indexes, []int{i, j, k})
+							indexes = append(indexes, i)
+							indexes = append(indexes, j)
+							indexes = append(indexes, k)
 						}
 					}
 				}
@@ -67,13 +70,16 @@ func Argwhere(t *Tensor) (*Tensor, error) {
 			}, nil
 		case 4:
 			chunkData := chunkData.([][][][]float32)
-			indexes := make([][]int, 0)
+			indexes := make([]int, 0)
 			for i, cube := range chunkData {
 				for j, matrix := range cube {
 					for k, row := range matrix {
 						for l, val := range row {
 							if val != 0 {
-								indexes = append(indexes, []int{i, j, k, l})
+								indexes = append(indexes, i)
+								indexes = append(indexes, j)
+								indexes = append(indexes, k)
+								indexes = append(indexes, l)
 							}
 						}
 					}
@@ -106,10 +112,67 @@ func Argwhere(t *Tensor) (*Tensor, error) {
 				PinMemory:    t.PinMemory}, nil
 		case 2:
 			chunkData := chunkData.([][]float64)
+			indexes := make([]int, 0)
+			for i, row := range chunkData {
+				for j, val := range row {
+					if val != 0 {
+						indexes = append(indexes, i)
+						indexes = append(indexes, j)
+					}
+				}
+			}
+			return &Tensor{
+				Shape:        []int{len(indexes), 2},
+				Data:         indexes,
+				Dtype:        Float64{},
+				RequiresGrad: t.RequiresGrad,
+				PinMemory:    t.PinMemory}, nil
 		case 3:
 			chunkData := chunkData.([][][]float64)
+			indexes := make([]int, 0)
+			for i, matrix := range chunkData {
+				for j, row := range matrix {
+					for k, val := range row {
+						if val != 0 {
+							indexes = append(indexes, i)
+							indexes = append(indexes, j)
+							indexes = append(indexes, k)
+						}
+					}
+				}
+			}
+
+			return &Tensor{
+				Shape:        []int{len(indexes), 3},
+				Data:         indexes,
+				Dtype:        Float64{},
+				RequiresGrad: t.RequiresGrad,
+				PinMemory:    t.PinMemory,
+			}, nil
 		case 4:
 			chunkData := chunkData.([][][][]float64)
+			indexes := make([]int, 0)
+			for i, cube := range chunkData {
+				for j, matrix := range cube {
+					for k, row := range matrix {
+						for l, val := range row {
+							if val != 0 {
+								indexes = append(indexes, i)
+								indexes = append(indexes, j)
+								indexes = append(indexes, k)
+								indexes = append(indexes, l)
+							}
+						}
+					}
+				}
+			}
+			return &Tensor{
+				Shape:        []int{len(indexes), 4},
+				Data:         indexes,
+				Dtype:        Float64{},
+				RequiresGrad: t.RequiresGrad,
+				PinMemory:    t.PinMemory,
+			}, nil
 		default:
 			return nil, errors.New("tensor dimsion not supported")
 		}
