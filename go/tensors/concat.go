@@ -5,6 +5,16 @@ import (
 	"fmt"
 )
 
+// Cat alias
+func Concat(tensors []*Tensor, dim int) (*Tensor, error) {
+	return Cat(tensors, dim)
+}
+
+// Cat alias
+func Concatenate(tensors []*Tensor, dim int) (*Tensor, error) {
+	return Cat(tensors, dim)
+}
+
 // Cat concatenates a slice of tensors along the specified dimension.
 // All tensors must have the same shape except in the concatenating dimension.
 func Cat(tensors []*Tensor, dim int) (*Tensor, error) {
